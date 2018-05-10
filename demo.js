@@ -26,15 +26,33 @@ m.mount(document.documentElement, {
             m('p', 'Root!'),
 
           '/demo.html': () =>
-            m('p', 'Root!'),
+            m('p', 'Demo!'),
 
           '/:404?': () =>
-            m('p', 'Root!'),
+            m('p', '404!'),
 
           then: console.log.bind(console),
           catch: console.log.bind(console),
           finally: console.log.bind(console),
         })
+      ),
+
+      m('p',
+        m(Link,
+          m('a[href=/]', 'Root!'),
+        ),
+      ),
+
+      m('p',
+        m(Link,
+          m('a[href=/demo.html?foo=bar]', 'Demo!'),
+        ),
+      ),
+
+      m('p',
+        m(Link,
+          m('a[href=/aeterytry]', '...Somewhere else?'),
+        ),
       ),
     ),
   ]

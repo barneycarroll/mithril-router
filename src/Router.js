@@ -1,15 +1,42 @@
 try {
-  module.exports = Router
-} catch(e){}
-
-try {
   var UniversalRouter = require('universal-router')
   var History         = require('history')
 } catch(e){}
 
+const history = History.createBrowserHistory()
+
+try {
+  module.exports = {Router, Link, history}
+} catch(e){}
+
+const routers = new Set
+
+history.listen((location, action) => {
+  for(resolve of routers)
+    resolve({
+      action,
+      location: history.createHref(location)
+    })
+})
+
+function Link(){
+  return {
+    view: v => v.children,
+
+    oncreate: ({dom}) => {
+      dom.addEventListener('click', e => {
+        if(e.target === dom && dom.href){
+          e.preventDefault()
+
+          history.push(dom.href.replace(dom.origin, ''))
+        }
+      })
+    },
+  }
+}
+
 function Router(v){
   let   state   = {}
-  const history = History.createBrowserHistory()
 
   const router  = new UniversalRouter(
     Object.keys(v.attrs).map(key => ({
@@ -49,15 +76,6 @@ function Router(v){
       })
   }
 
-  const listener = history.listen((location, action) => {
-    action = args[1]
-
-    resolve({
-      action,
-      location: history.createHref(location)
-    })
-  })
-
   resolve({
     location: history.createHref(location)
   })
@@ -70,6 +88,11 @@ function Router(v){
       &&
         v.attrs[state.key](state),
 
-    onremove: listener,
+    oninit: () => {
+      routers.add(resolve)
+    },
+    onremove: () => {
+      routers.delete(resolve)
+    },
   }
 }
